@@ -14,6 +14,9 @@
 /* ORDER OP */
 
 const char *const luaP_opnames[NUM_OPCODES+1] = {
+  "ADD",      // by c0i
+  "CALL",     // by c0i
+
   "MOVE",
   "LOADK",
   "LOADBOOL",
@@ -26,7 +29,7 @@ const char *const luaP_opnames[NUM_OPCODES+1] = {
   "SETTABLE",
   "NEWTABLE",
   "SELF",
-  "ADD",
+  //"ADD",    // by c0i
   "SUB",
   "MUL",
   "DIV",
@@ -42,7 +45,7 @@ const char *const luaP_opnames[NUM_OPCODES+1] = {
   "LE",
   "TEST",
   "TESTSET",
-  "CALL",
+  //"CALL",   // by c0i
   "TAILCALL",
   "RETURN",
   "FORLOOP",
@@ -60,7 +63,10 @@ const char *const luaP_opnames[NUM_OPCODES+1] = {
 
 const lu_byte luaP_opmodes[NUM_OPCODES] = {
 /*       T  A    B       C     mode		   opcode	*/
-  opmode(0, 1, OpArgR, OpArgN, iABC) 		/* OP_MOVE */
+  opmode(0, 1, OpArgK, OpArgK, iABC)    /* OP_ADD */        // by c0i
+ ,opmode(0, 1, OpArgU, OpArgU, iABC)    /* OP_CALL */       // by c0i
+
+ ,opmode(0, 1, OpArgR, OpArgN, iABC) 		/* OP_MOVE */
  ,opmode(0, 1, OpArgK, OpArgN, iABx)		/* OP_LOADK */
  ,opmode(0, 1, OpArgU, OpArgU, iABC)		/* OP_LOADBOOL */
  ,opmode(0, 1, OpArgR, OpArgN, iABC)		/* OP_LOADNIL */
@@ -72,7 +78,7 @@ const lu_byte luaP_opmodes[NUM_OPCODES] = {
  ,opmode(0, 0, OpArgK, OpArgK, iABC)		/* OP_SETTABLE */
  ,opmode(0, 1, OpArgU, OpArgU, iABC)		/* OP_NEWTABLE */
  ,opmode(0, 1, OpArgR, OpArgK, iABC)		/* OP_SELF */
- ,opmode(0, 1, OpArgK, OpArgK, iABC)		/* OP_ADD */
+ //,opmode(0, 1, OpArgK, OpArgK, iABC)		/* OP_ADD */        // by c0i
  ,opmode(0, 1, OpArgK, OpArgK, iABC)		/* OP_SUB */
  ,opmode(0, 1, OpArgK, OpArgK, iABC)		/* OP_MUL */
  ,opmode(0, 1, OpArgK, OpArgK, iABC)		/* OP_DIV */
@@ -88,7 +94,7 @@ const lu_byte luaP_opmodes[NUM_OPCODES] = {
  ,opmode(1, 0, OpArgK, OpArgK, iABC)		/* OP_LE */
  ,opmode(1, 1, OpArgR, OpArgU, iABC)		/* OP_TEST */
  ,opmode(1, 1, OpArgR, OpArgU, iABC)		/* OP_TESTSET */
- ,opmode(0, 1, OpArgU, OpArgU, iABC)		/* OP_CALL */
+ //,opmode(0, 1, OpArgU, OpArgU, iABC)		/* OP_CALL */       // by c0i
  ,opmode(0, 1, OpArgU, OpArgU, iABC)		/* OP_TAILCALL */
  ,opmode(0, 0, OpArgU, OpArgN, iABC)		/* OP_RETURN */
  ,opmode(0, 1, OpArgR, OpArgN, iAsBx)		/* OP_FORLOOP */
