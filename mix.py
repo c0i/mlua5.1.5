@@ -6,15 +6,15 @@ import sys
 import numpy as np
 from argparse import ArgumentParser
 
-class bcolors:
-    HEADER = '\033[95m'
-    OKBLUE = '\033[94m'
-    OKGREEN = '\033[92m'
-    WARNING = '\033[93m'
-    FAIL = '\033[91m'
-    ENDC = '\033[0m'
-    BOLD = '\033[1m'
-    UNDERLINE = '\033[4m'
+def prRed(prt,Blink=False): print("\033[91m {}{}\033[00m" .format('\033[5m' if Blink else '',prt))
+def prGreen(prt,Blink=False): print("\033[92m {}{}\033[00m" .format('\033[5m' if Blink else '',prt))
+def prYellow(prt,Blink=False): print("\033[93m {}{}\033[00m" .format('\033[5m' if Blink else '',prt))
+def prLightPurple(prt,Blink=False): print("\033[94m {}{}\033[00m" .format('\033[5m' if Blink else '',prt))
+def prPurple(prt,Blink=False): print("\033[95m {}{}\033[00m" .format('\033[5m' if Blink else '',prt))
+def prCyan(prt,Blink=False): print("\033[96m {}{}\033[00m" .format('\033[5m' if Blink else '',prt))
+def prLightGray(prt,Blink=False): print("\033[97m {}{}\033[00m" .format('\033[5m' if Blink else '',prt))
+def prBlack(prt,Blink=False): print("\033[98m {}{}\033[00m" .format('\033[5m' if Blink else '',prt))
+def prBlink(prt,Blink=False): print('\033[91m {}{}\033[00m' .format('\033[5m' if Blink else '',prt))
 
 def run(cmd, quiet=False):
     from subprocess import call
@@ -23,10 +23,8 @@ def run(cmd, quiet=False):
     else:
         ret = call(cmd, shell=True)
     if ret != 0:
-        print bcolors.FAIL
-        print "==> Command failed: " + cmd
-        print "==> Stopping build."
-        print bcolors.ENDC
+        prRed ("==> Command failed: " + cmd)
+        prRed ("==> Stopping build.")
         sys.exit(1)
 
 
@@ -246,20 +244,21 @@ if __name__ == '__main__':
     parser.add_argument('--dryrun', dest='dryrun', action='store_true', default=False, help='Dont modify lua files')
     (args, unknown) = parser.parse_known_args()
     if len(unknown) > 0:
-        print("unknown arguments: %s" % unknown)
+        prRed("unknown arguments: %s" % unknown)
         parser.print_help()
+        exit(-1)
 
     main(not args.revert, args.dryrun)
 
     dir = os.path.dirname(os.path.abspath(__file__))
     os.chdir(dir)
-    print(bcolors.HEADER + 'compile lua' + bcolors.ENDC)
+    prPurple('compile lua')
     run('make clean')
     run('make macosx')
 
-    print(bcolors.HEADER + 'test luac' + bcolors.ENDC)
-    print(bcolors.HEADER + '>generate love.luac' + bcolors.ENDC)
+    prPurple('test luac')
+    prGreen('>generate love.luac')
     run('./src/luac -o love.luac love.lua')
 
-    print(bcolors.HEADER + '>load luac' + bcolors.ENDC)
+    prPurple('>load luac')
     run('./src/lua love.luac')
