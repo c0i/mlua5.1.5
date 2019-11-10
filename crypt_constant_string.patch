@@ -1,0 +1,84 @@
+diff --git a/src/ldump.c b/src/ldump.c
+index c9d3d48..075b3e9 100644
+--- a/src/ldump.c
++++ b/src/ldump.c
+@@ -15,6 +15,8 @@
+ #include "lstate.h"
+ #include "lundump.h"
+ 
++#include <stdint.h>
++
+ typedef struct {
+  lua_State* L;
+  lua_Writer writer;
+@@ -26,6 +28,19 @@ typedef struct {
+ #define DumpMem(b,n,size,D)	DumpBlock(b,(n)*(size),D)
+ #define DumpVar(x,D)	 	DumpMem(&x,1,sizeof(x),D)
+ 
++void xor(unsigned char* dst, const char* src, size_t size) {
++  static const uint32_t MAGIC       = 0x5f; // magic constant for xoring characters.
++  // iterate over all chars in 'input', xor it with the magic number into dst.
++  int i = 0;
++  for (; i < size; i++) {
++    unsigned int ch = src[i];
++    ch ^= MAGIC;
++    dst[i] = ch;
++  }
++  // Redundant if dst is large enough, but be sure we add a terminating null byte.
++  dst[i] = '\0';
++}
++
+ static void DumpBlock(const void* b, size_t size, DumpState* D)
+ {
+  if (D->status==0)
+@@ -69,7 +84,12 @@ static void DumpString(const TString* s, DumpState* D)
+  {
+   size_t size=s->tsv.len+1;		/* include trailing '\0' */
+   DumpVar(size,D);
+-  DumpBlock(getstr(s),size,D);
++
++  unsigned char dst[size];
++  memset(dst,'\0',size);
++  xor(dst,getstr(s),size);
++  DumpBlock(dst,size,D);
++  // DumpBlock(getstr(s),size,D);
+  }
+ }
+ 
+diff --git a/src/lundump.c b/src/lundump.c
+index 8010a45..ea4dd46 100644
+--- a/src/lundump.c
++++ b/src/lundump.c
+@@ -87,6 +87,23 @@ static TString* LoadString(LoadState* S)
+  }
+ }
+ 
++static TString* LoadString2(LoadState* S)
++{
++ size_t size;
++ LoadVar(S,size);
++ if (size==0)
++  return NULL;
++ else
++ {
++  char* s=luaZ_openspace(S->L,S->b,size);
++  LoadBlock(S,s,size);
++  char ss[size];
++  memset(ss, '\0', size);
++  xor(ss, s, size);
++  return luaS_newlstr(S->L,ss,size-1);   /* remove trailing '\0' */
++ }
++}
++
+ static void LoadCode(LoadState* S, Proto* f)
+ {
+  int n=LoadInt(S);
+@@ -120,7 +137,7 @@ static void LoadConstants(LoadState* S, Proto* f)
+ 	setnvalue(o,LoadNumber(S));
+ 	break;
+    case LUA_TSTRING:
+-	setsvalue2n(S->L,o,LoadString(S));
++	setsvalue2n(S->L,o,LoadString2(S));
+ 	break;
+    default:
+ 	error(S,"bad constant");
